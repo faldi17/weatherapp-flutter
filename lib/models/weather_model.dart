@@ -9,11 +9,13 @@ class Weather {
     required this.mainCondition,
   });
 
-  factory Weather.fromJSON(Map<String, dynamic> json) {
+  factory Weather.fromJson(Map<String, dynamic> json) {
     return Weather(
-      cityName: json['name'],
-      temperature: json['main']['temp'].toDouble(),
-      mainCondition: json['weather'][0]['main'],
+      cityName: json['name'] ?? 'Unknown',
+      temperature: (json['main']?['temp'] ?? 0).toDouble(),
+      mainCondition: json['weather'] != null && json['weather'].isNotEmpty
+          ? json['weather'][0]['main']
+          : 'Unknown',
     );
   }
 }

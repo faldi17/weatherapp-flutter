@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:weatherapp_flutter/models/weather_model.dart';
 import 'package:weatherapp_flutter/services/weather_service.dart';
 
 class WeatherPage extends StatefulWidget {
@@ -17,12 +16,8 @@ class _WeatherPageState extends State<WeatherPage> {
 
   // fetch weather
   _fetchWeather() async {
-    // get the current city
-    String cityName = await _weatherService.getCurrentCity();
-
-    // get weather for city
     try {
-      final weather = await _weatherService.getWeather(cityName);
+      final weather = await _weatherService.getWeather();
       setState(() {
         _weather = weather;
       });
@@ -30,16 +25,16 @@ class _WeatherPageState extends State<WeatherPage> {
     // any errors
     catch (e) {
       // ignore: avoid_print
-      print(e);
+      print('Error fetching weather: $e');
     }
   }
 
   // weather animations
-  String getWeatherAnimation(String? mainCondition) {
-    if (mainCondition == null) return 'assets/sunny.json';
+  String getWeatherAnimation(String? description) {
+    if (description == null) return 'assets/sunny.json';
 
-    switch (mainCondition.toLowerCase()) {
-      case 'cloud':
+    switch (description.toLowerCase()) {
+      case 'clouds':
       case 'mist':
       case 'smoke':
       case 'haze':
@@ -50,7 +45,7 @@ class _WeatherPageState extends State<WeatherPage> {
       case 'drizzle':
       case 'shower rain':
         return 'assets/rain.json';
-      case 'thunderstrom':
+      case 'thunderstorm':
         return 'assets/thunder.json';
       case 'clear':
         return 'assets/sunny.json';
@@ -63,7 +58,6 @@ class _WeatherPageState extends State<WeatherPage> {
   @override
   void initState() {
     super.initState();
-
     // fetch weather on startup
     _fetchWeather();
   }
@@ -72,23 +66,33 @@ class _WeatherPageState extends State<WeatherPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // city name
-            Text(_weather?.cityName ?? 'loading city..'),
+        child: _weather == null
+            ? const CircularProgressIndicator()
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // city name
+                  Text(
+                    _weather!.cityName,
+                    style: const TextStyle(fontSize: 24),
+                  ),
 
-            // animation
-            Lottie.asset(getWeatherAnimation(_weather?.mainCondition)),
+                  // animation
+                  Lottie.asset(getWeatherAnimation(_weather!.description)),
 
-            // temperature
-            Text('${_weather?.temperature.round()}°C'),
+                  // temperature
+                  Text(
+                    '${_weather!.temperature.round()}°C',
+                    style: const TextStyle(fontSize: 40),
+                  ),
 
-            // weather condition
-            Text(_weather?.mainCondition ?? ""),
-
-          ],
-        ),
+                  // weather condition
+                  Text(
+                    _weather!.description,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ],
+              ),
       ),
     );
   }
